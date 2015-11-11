@@ -8,8 +8,7 @@ import (
 	"log"
 )
 
-
-func main(){
+func check_holiday() bool{
 	var hdate string
 	is_holiday := true
 	now := time.Now()
@@ -32,13 +31,19 @@ func main(){
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Printf("It's not a holiday\n")
 			is_holiday = false
 		}else {
 			log.Fatal(err)
 		}
 	}
+	return is_holiday
+}
+
+func main(){
+	is_holiday := check_holiday()
 	if is_holiday == true{
-		fmt.Printf("%s\n", hdate)
+		fmt.Printf("Is holiday\n")
+	}else{
+		fmt.Printf("Not holiday\n")
 	}
 }
