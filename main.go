@@ -6,7 +6,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"time"
 	"log"
+	"net/http"
+	"encoding/json"
 )
+
+type Holiday struct {
+	Holiday bool
+}
 
 func check_holiday() bool{
 	var hdate string
@@ -39,11 +45,37 @@ func check_holiday() bool{
 	return is_holiday
 }
 
-func main(){
+func holiday_view(w http.ResponseWriter, r *http.Request){
 	is_holiday := check_holiday()
 	if is_holiday == true{
-		fmt.Printf("Is holiday\n")
+		fmt.Fprintf(w, "It's a holiday!")
 	}else{
-		fmt.Printf("Not holiday\n")
+		fmt.Fprintf(w, "It's not a holiday!")
+	}
+}
+
+func holiday_api(w http.ResponseWriter, r *http.Request){
+	var holiday_struct Holiday
+	if check_holiday() == true{
+		holiday_struct.Holiday = true
+	}else{
+		holiday_struct.Holiday = false
+	}
+
+	js, err := json.Marshal(holiday_struct)
+	if err != nil{
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func main(){
+	http.HandleFunc("/", holiday_view)
+	http.HandleFunc("/api", holiday_api)
+	err := http.ListenAndServe(":9000", nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
